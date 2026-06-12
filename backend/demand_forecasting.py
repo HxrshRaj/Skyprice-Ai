@@ -1,6 +1,5 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
 # ==========================
@@ -19,7 +18,6 @@ df["day"] = df["date"].dt.day
 df["month"] = df["date"].dt.month
 df["weekday"] = df["date"].dt.weekday
 
-# Route Encoding
 df["route_code"] = df["route"].astype("category").cat.codes
 
 # ==========================
@@ -38,17 +36,6 @@ X = df[
 y = df["expected_demand"]
 
 # ==========================
-# TRAIN TEST SPLIT
-# ==========================
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
-
-# ==========================
 # MODEL
 # ==========================
 
@@ -57,49 +44,58 @@ model = RandomForestRegressor(
     random_state=42
 )
 
-model.fit(X_train, y_train)
+model.fit(X, y)
 
 # ==========================
-# PREDICTIONS
+# FORECAST LATEST DEMAND
 # ==========================
 
-predictions = model.predict(X_test)
+latest_rows = df.groupby("route").tail(1).copy()
+
+future_df = latest_rows.copy()
+
+future_df["day"] = future_df["day"] + 1
+
+future_X = future_df[
+    [
+        "day",
+        "month",
+        "weekday",
+        "route_code"
+    ]
+]
+
+future_predictions = model.predict(future_X)
+
+# ==========================
+# SAVE FORECAST
+# ==========================
+
+forecast_output = pd.DataFrame({
+    "route": future_df["route"].values,
+    "forecast_demand": future_predictions.round().astype(int)
+})
+
+forecast_output.to_csv(
+    "datasets/route_forecasts.csv",
+    index=False
+)
 
 # ==========================
 # EVALUATION
 # ==========================
 
+predictions = model.predict(X)
+
 mae = mean_absolute_error(
-    y_test,
+    y,
     predictions
 )
 
 print(f"\nMAE: {mae:.2f}")
 
-# ==========================
-# SAMPLE RESULTS
-# ==========================
+print("\nRoute Forecasts")
 
-results = pd.DataFrame({
-    "Actual": y_test.values[:10],
-    "Predicted": predictions[:10]
-})
+print(forecast_output)
 
-print("\nSample Predictions")
-print(results)
-
-# ==========================
-# SAVE FORECAST OUTPUT
-# ==========================
-
-forecast_df = pd.DataFrame({
-    "Actual": y_test.values,
-    "Predicted": predictions
-})
-
-forecast_df.to_csv(
-    "datasets/demand_forecast_output.csv",
-    index=False
-)
-
-print("\nForecast saved successfully.")
+print("\nForecast saved to route_forecasts.csv")

@@ -1,0 +1,6 @@
+route,allocated_seats,yield_per_passenger,optimized_revenue
+BLR-HYD,0,5500,0
+BOM-BLR,277,6000,1662000
+DEL-BLR,231,6200,1432200
+DEL-BOM,269,6500,1748500
+DEL-HYD,223,5800,1293400

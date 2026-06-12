@@ -1,0 +1,6 @@
+route,avg_price,avg_demand,elasticity_score,pricing_strategy
+DEL-BOM,9138.41,109.28,0.012,Low Sensitivity
+DEL-BLR,9242.77,109.76,0.0119,Low Sensitivity
+BOM-BLR,9075.49,108.83,0.012,Low Sensitivity
+DEL-HYD,9265.84,108.35,0.0117,Low Sensitivity
+BLR-HYD,9150.48,109.13,0.0119,Low Sensitivity

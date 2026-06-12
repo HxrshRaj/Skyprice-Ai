@@ -1,9 +1,10 @@
 import sys
 import os
 import numpy as np
+import pandas as pd
 
 # ==========================
-# ADD REVPY TO PATH
+# LOAD REVPY
 # ==========================
 
 sys.path.append(
@@ -16,50 +17,72 @@ sys.path.append(
 from revpy.optimizers import calc_EMSRb
 
 # ==========================
-# SAMPLE AIRLINE DATA
+# LOAD FORECASTS
 # ==========================
 
-fares = np.array([
-    12000,  # Business
-    8000,   # Premium
-    5000,   # Economy
-    3000    # Saver
-])
-
-demands = np.array([
-    40,
-    60,
-    120,
-    180
-])
-
-sigmas = np.array([
-    5,
-    10,
-    20,
-    30
-])
-
-# ==========================
-# EMSRb OPTIMIZATION
-# ==========================
-
-protection_levels = calc_EMSRb(
-    fares,
-    demands,
-    sigmas
+forecast_df = pd.read_csv(
+    "datasets/route_forecasts.csv"
 )
 
+results = []
+
 # ==========================
-# OUTPUT
+# RUN EMSRb FOR EACH ROUTE
 # ==========================
 
-print("\n===== EMSRb Revenue Optimization =====\n")
+for _, row in forecast_df.iterrows():
 
-for i, level in enumerate(protection_levels):
-    print(
-        f"Protection Level {i+1}: "
-        f"{round(level, 2)} seats"
+    route = row["route"]
+    forecast_demand = int(row["forecast_demand"])
+
+    fares = np.array([
+        12000,
+        8000,
+        5000,
+        3000
+    ])
+
+    demands = np.array([
+        max(10, int(forecast_demand * 0.10)),
+        max(20, int(forecast_demand * 0.20)),
+        max(40, int(forecast_demand * 0.30)),
+        max(60, int(forecast_demand * 0.40))
+    ])
+
+    sigmas = np.array([
+        5,
+        10,
+        20,
+        30
+    ])
+
+    protection_levels = calc_EMSRb(
+        fares,
+        demands,
+        sigmas
     )
 
-print("\nOptimization Complete.")
+    results.append({
+        "route": route,
+        "forecast_demand": forecast_demand,
+        "business_protection": int(protection_levels[0]),
+        "premium_protection": int(protection_levels[1]),
+        "economy_protection": int(protection_levels[2]),
+        "saver_protection": int(protection_levels[3])
+    })
+
+# ==========================
+# SAVE OUTPUT
+# ==========================
+
+output_df = pd.DataFrame(results)
+
+output_df.to_csv(
+    "datasets/revenue_optimization_output.csv",
+    index=False
+)
+
+print("\nRevenue Optimization Results\n")
+print(output_df)
+
+print("\nSaved to revenue_optimization_output.csv")

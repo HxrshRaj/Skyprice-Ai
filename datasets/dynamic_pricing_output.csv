@@ -1,0 +1,6 @@
+route,forecast_demand,current_price,recommended_price,price_change_percent
+BLR-HYD,267,5000,5500.0,10.0
+BOM-BLR,277,5000,5500.0,10.0
+DEL-BLR,231,5000,5250.0,5.0
+DEL-BOM,269,5000,5500.0,10.0
+DEL-HYD,294,5000,6000.0,20.0
